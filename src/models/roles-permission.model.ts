@@ -1,5 +1,10 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { PermissionType, Roles, RoleType } from "../enums/role.enum";
+import {
+    Permissions,
+    PermissionType,
+    Roles,
+    RoleType,
+} from "../enums/role.enum";
 import { RolePermissions } from "../utils/role-permission";
 
 export interface RoleDocument extends Document {
@@ -10,10 +15,10 @@ export interface RoleDocument extends Document {
 const roleSchema = new Schema<RoleDocument>(
     {
         name: {
-            type: String,
-            enum: Object.values(Roles),
-            required: true,
-            unique: true,
+        type: String,
+        enum: Object.values(Roles),
+        required: true,
+        unique: true,
         },
         permissions: {
             type: [String],
