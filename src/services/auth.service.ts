@@ -93,71 +93,73 @@ export const registerUserService = async (body: {
     name: string;
     password: string;
 }) => {
-        const { email, name, password } = body;
-        const session = await mongoose.startSession();
-
-        try {
-            session.startTransaction();
-            console.log("Started Session...");
-
+    const { email, name, password } = body;
+    const session = await mongoose.startSession();
+    try {
+        session.startTransaction();
+        console.log("Started Session...");
+        //check user on db
         const existingUser = await UserModel.findOne({ email }).session(session);
+        //jika ada user, maka tampilkan error
         if (existingUser) {
-        throw new BadRequestException("Email already exists");
+            throw new BadRequestException("Email already exists");
         }
-
+        //buat user baru dengan password
         const user = new UserModel({
-        email,
-        name,
-        password,
+            email,
+            name,
+            password,
         });
         await user.save({ session });
 
+        //buat account baru untuk user
         const account = new AccountModel({
-        userId: user._id,
-        provider: ProviderEnum.EMAIL,
-        providerId: email,
+            userId: user._id,
+            provider: ProviderEnum.EMAIL,
+            providerId: email,
         });
         await account.save({ session });
 
-        // 3. Create a new workspace for the new user
+        // buat workspace baru untuk user
         const workspace = new WorkspaceModel({
-        name: `My Workspace`,
-        description: `Workspace created for ${user.name}`,
-        owner: user._id,
+            name: `My Workspace`,
+            description: `Workspace created for ${user.name}`,
+            owner: user._id,
         });
         await workspace.save({ session });
 
+        //check owner role
         const ownerRole = await RoleModel.findOne({
-        name: Roles.OWNER,
+            name: Roles.OWNER,
         }).session(session);
 
+        //jika owner role tidak ditemukan, maka tampilkan error
         if (!ownerRole) {
-        throw new NotFoundException("Owner role not found");
+            throw new NotFoundException("Owner role not found");
         }
 
+        //buat member baru untuk workspace
         const member = new MemberModel({
-        userId: user._id,
-        workspaceId: workspace._id,
-        role: ownerRole._id,
-        joinedAt: new Date(),
+            userId: user._id,
+            workspaceId: workspace._id,
+            role: ownerRole._id,
+            joinedAt: new Date(),
         });
         await member.save({ session });
 
+        //update currentWorkspace di user
         user.currentWorkspace = workspace._id as mongoose.Types.ObjectId;
         await user.save({ session });
-
         await session.commitTransaction();
         session.endSession();
         console.log("End Session...");
-
         return {
-        userId: user._id,
-        workspaceId: workspace._id,
+            userId: user._id,
+            workspaceId: workspace._id,
         };
     } catch (error) {
         await session.abortTransaction();
         session.endSession();
-
         throw error;
     }
 };
@@ -166,7 +168,7 @@ export const verifyUserService = async ({
     email,
     password,
     provider = ProviderEnum.EMAIL,
-    }: {
+}: {
     email: string;
     password: string;
     provider?: string;
