@@ -1,9 +1,11 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../middlewares/asyncHandler.middleware";
 import { createWorkspaceSchema, workspaceIdSchema } from "../validation/workspace.validation";
-import { createWorkspaceService, getAllWorkspacesUserIsMemberService, getWorkspaceByIdService } from "../services/workspace.service";
+import { createWorkspaceService, getAllWorkspacesUserIsMemberService, getWorkspaceAnalyticsService, getWorkspaceByIdService, getWorkspaceMembersService } from "../services/workspace.service";
 import { HTTPSTATUS } from "../config/http.config";
 import { getMemberRoleInWorkspace } from "../services/member.service";
+import { roleGuard } from "../utils/roleGuard";
+import { Permissions } from "../enums/role.enum";
 
 export const createWorkspaceController = asyncHandler(
     async (req: Request, res: Response) => {
@@ -41,3 +43,35 @@ export const getWorkspaceByIdController = asyncHandler(
         });
     }
 );
+
+export const getWorkspaceMembersController = asyncHandler(
+    async (req: Request, res: Response) => {
+        const workspaceId = workspaceIdSchema.parse(req.params.id);
+        const userId = req.user?._id;
+        const { role } = await getMemberRoleInWorkspace(userId, workspaceId);
+        roleGuard(role, [Permissions.VIEW_ONLY]);
+        const { members, roles } = await getWorkspaceMembersService(workspaceId);
+        return res.status(HTTPSTATUS.OK).json({
+            message: "Workspace members retrieved successfully",
+            members,
+            roles,
+        });
+    }
+);
+
+export const getWorkspaceAnalyticsController = asyncHandler(
+    async (req: Request, res: Response) => {
+        const workspaceId = workspaceIdSchema.parse(req.params.id);
+        const userId = req.user?._id;
+        const { role } = await getMemberRoleInWorkspace(userId, workspaceId);
+        roleGuard(role, [Permissions.VIEW_ONLY]);
+        const { analytics } = await getWorkspaceAnalyticsService(workspaceId);
+        return res.status(HTTPSTATUS.OK).json({
+            message: "Workspace analytics retrieved successfully",
+            analytics,
+        });
+    }
+);
+
+
+
