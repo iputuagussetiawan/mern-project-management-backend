@@ -17,21 +17,17 @@ export const getMemberRoleInWorkspace = async (
     if (!workspace) {
         throw new NotFoundException("Workspace not found");
     }
-
     const member = await MemberModel.findOne({
         userId,
         workspaceId,
     }).populate("role");
-
     if (!member) {
         throw new UnauthorizedException(
         "You are not a member of this workspace",
         ErrorCodeEnum.ACCESS_UNAUTHORIZED
         );
     }
-
     const roleName = member.role?.name;
-
     return { role: roleName };
 };
 
@@ -39,7 +35,7 @@ export const joinWorkspaceByInviteService = async (
     userId: string,
     inviteCode: string
 ) => {
-  // Find workspace by invite code
+    // Find workspace by invite code
     const workspace = await WorkspaceModel.findOne({ inviteCode }).exec();
     if (!workspace) {
         throw new NotFoundException("Invalid invite code or workspace not found");
