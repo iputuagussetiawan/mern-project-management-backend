@@ -173,21 +173,26 @@ export const verifyUserService = async ({
     password: string;
     provider?: string;
     }) => {
+    //check account di database dengan pencocokan email
     const account = await AccountModel.findOne({ provider, providerId: email });
+
+    //jika account tidak ditemukan, maka tampilkan error
     if (!account) {
         throw new NotFoundException("Invalid email or password");
     }
 
+    //check password
     const user = await UserModel.findById(account.userId);
-
+    //jika user tidak ditemukan, maka tampilkan error
     if (!user) {
         throw new NotFoundException("User not found for the given account");
     }
 
+    //check password
     const isMatch = await user.comparePassword(password);
+    //jika password tidak cocok, maka tampilkan error
     if (!isMatch) {
         throw new UnauthorizedException("Invalid email or password");
     }
-
     return user.omitPassword();
 };

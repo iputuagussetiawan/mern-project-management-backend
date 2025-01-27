@@ -78,7 +78,7 @@ export const logOutController = asyncHandler(
           .json({ error: "Failed to log out" });
       }
     });
-
+    //remove session
     req.session = null;
     return res
       .status(HTTPSTATUS.OK)
