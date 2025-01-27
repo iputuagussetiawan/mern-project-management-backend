@@ -67,6 +67,27 @@ export const getAllWorkspacesUserIsMemberService = async (userId: string) => {
     return { workspaces };
 };
 
+//********************************
+// UPDATE WORKSPACE
+//**************** **************/
+export const updateWorkspaceByIdService = async (
+    workspaceId: string,
+    name: string,
+    description?: string
+) => {
+    const workspace = await WorkspaceModel.findById(workspaceId);
+    if (!workspace) {
+        throw new NotFoundException("Workspace not found");
+    }
+    // Update the workspace details
+    workspace.name = name || workspace.name;
+    workspace.description = description || workspace.description;
+    await workspace.save();
+    return {
+        workspace,
+    };
+};
+
 export const getWorkspaceByIdService = async (workspaceId: string) => {
     const workspace = await WorkspaceModel.findById(workspaceId);
     if (!workspace) {
