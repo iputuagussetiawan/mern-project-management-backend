@@ -7,14 +7,17 @@ const authRoutes = Router();
 authRoutes.post("/register", registerUserController);
 authRoutes.post("/login", loginController);
 authRoutes.post("/logout", logOutController);
+
 authRoutes.get("/google",
   passport.authenticate("google", {
     scope: ["profile", "email"],
+    session: false,
   })
 );
 authRoutes.get("/google/callback",
   passport.authenticate("google", {
       failureRedirect: failedUrl,
+      session: false
   }),
   googleLoginCallback
 );
